@@ -11,6 +11,7 @@ namespace RJSON {
         RJsonObject
     */
     class RJsonValue {
+    public:
         virtual NodeType getType() = 0;
     };
     class RJsonObject:public RJsonValue {

@@ -4,6 +4,7 @@
 #include <ios>
 #include <memory>
 #include <string>
+#include <iostream>
 namespace RJSON {
     FileReaderWriter::FileReaderWriter(std::string fileName) {
         this->f.open(fileName.c_str());
@@ -75,7 +76,7 @@ namespace RJSON {
     }
     std::shared_ptr<tokenElement> Reader::readAToken() {
         wchar_t lastChar = this->getLastChar();
-        while (lastChar == L' ') {
+        while (iswspace(lastChar) && lastChar != WEOF) {
             lastChar = read();
         }
         if (lastChar == L'{') {   //Start of object

@@ -10,7 +10,7 @@ enum NumberType {
 };
 class Number:public RJsonValue {
 private:
-    NumberType NumberType;
+    enum NumberType NumberType;
     std::any data;
 public:
     NodeType getType() { return TypeNumber; }
