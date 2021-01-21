@@ -1,15 +1,19 @@
 #pragma once
+#include "RJsonObject.h"
 #include <any>
 #include <bits/stdint-intn.h>
+#include "type.h"
+namespace RJSON {
 enum NumberType {
     Int64,
     Double,
 };
-class Number {
+class Number:public RJsonValue {
 private:
     NumberType NumberType;
     std::any data;
 public:
+    NodeType getType() { return TypeNumber; }
     Number (int64_t data):data(data){
         NumberType = Int64;
     }
@@ -38,3 +42,4 @@ public:
         return 0;
     }
 };
+}

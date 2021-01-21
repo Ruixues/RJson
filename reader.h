@@ -18,7 +18,7 @@ namespace RJSON
         STRING,
         BOOLEAN,
         SEP_COLON,
-        SEP_COMMA
+        SEP_COMMA,
     };
     
     
@@ -30,16 +30,21 @@ namespace RJSON
     };
     class Reader
     {
+    private:
+        std::shared_ptr<tokenElement> nowToken;
     public:
         virtual wchar_t getLastChar() = 0;
         virtual wchar_t read() = 0;
+        // getNowToken have a default version.You can override it if you have a better one.
+        virtual std::shared_ptr<tokenElement> getNowToken() { return this->nowToken; }
         // isWord have a default version.You can override it if you have a better one.
         virtual bool isWord(std::wstring str);
-        virtual std::unique_ptr<tokenElement> readAToken() = 0;
+        // readAToken have a default version.You can override it if you have a better one.
+        virtual std::shared_ptr<tokenElement> readAToken();
         // readString is a default version.You can override it if you have a better one.
         virtual std::wstring readString();
         // readNumber is a default version.You can override it if you have a better one.
-        virtual std::unique_ptr<Number> readNumber();
+        virtual class Number* readNumber();
     };
     class Writer
     {
@@ -55,7 +60,6 @@ namespace RJSON
         FileReaderWriter(std::string fileName);
         wchar_t read ();
         bool write(wchar_t data);
-        std::unique_ptr<tokenElement> readAToken();
         wchar_t getLastChar();
     };
 } // namespace RJSON

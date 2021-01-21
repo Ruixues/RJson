@@ -1,6 +1,9 @@
 #include "reader.h"
+#include "number.h"
+#include "type.h"
 #include <ios>
 #include <memory>
+#include <string>
 namespace RJSON {
     FileReaderWriter::FileReaderWriter(std::string fileName) {
         this->f.open(fileName.c_str());
@@ -28,9 +31,25 @@ namespace RJSON {
         } while ((++it) != str.end());
         return true;
     }
-    std::unique_ptr<Number> Reader::readNumber() {
+    class Number* Reader::readNumber() {
         // 解析数字
-        
+        std::wstring val;
+        val += this->getLastChar();
+        wchar_t c = this->read();
+        while (iswdigit(c)) {
+            val += c;
+            c = this->read();
+        }
+        if (c != L'.') {
+            return new class Number(int64_t(std::stoll(val)));
+        }
+        // 否则那就是小数
+        val += L'.';
+        while (iswdigit(c)) {
+            val += c;
+            c = this->read();
+        }
+        return new class Number(std::stod(val));
     }
     std::wstring Reader::readString() {
         std::wstring res;
@@ -54,44 +73,54 @@ namespace RJSON {
     wchar_t FileReaderWriter::getLastChar() {
         return this->lastChar;
     }
-    std::unique_ptr<tokenElement> FileReaderWriter::readAToken() {
-        while (this->lastChar == L' ') {
-            this->lastChar = read();
+    std::shared_ptr<tokenElement> Reader::readAToken() {
+        wchar_t lastChar = this->getLastChar();
+        while (lastChar == L' ') {
+            lastChar = read();
         }
-        if (this->lastChar == L'{') {   //Start of object
-            return std::make_unique<tokenElement>(BEGIN_OBJECT,nullptr);
+        if (lastChar == L'{') {   //Start of object
+            return this->nowToken = std::make_shared<tokenElement>(BEGIN_OBJECT,nullptr);
         }
-        if (this->lastChar == L'}') {
-            return std::make_unique<tokenElement>(END_OBJECT,nullptr);
+        if (lastChar == L'}') {
+            return this->nowToken = std::make_shared<tokenElement>(END_OBJECT,nullptr);
         }
-        if (this->lastChar == L'[') {
-            return std::make_unique<tokenElement>(BEGIN_ARRAY,nullptr);
+        if (lastChar == L'[') {
+            return this->nowToken = std::make_shared<tokenElement>(BEGIN_ARRAY,nullptr);
         }
-        if (this->lastChar == L']') {
-            return std::make_unique<tokenElement>(END_ARRAY,nullptr);
+        if (lastChar == L']') {
+            return this->nowToken = std::make_shared<tokenElement>(END_ARRAY,nullptr);
         }
-        if (this->lastChar == L'n') {
+        if (lastChar == L':') {
+            return this->nowToken = std::make_shared<tokenElement>(SEP_COLON,nullptr);
+        }
+        if (lastChar == L',') {
+            return this->nowToken = std::make_shared<tokenElement>(SEP_COMMA,nullptr);
+        }
+        if (lastChar == L'n') {
             // Must be null
             if (!isWord(L"ull")) {
                 return nullptr;
             }
-            return std::make_unique<tokenElement>(NULL_,nullptr);
+            return this->nowToken = std::make_shared<tokenElement>(NULL_,nullptr);
         }
-        if (this->lastChar == L't') {
+        if (lastChar == L't') {
             if (!isWord(L"rue")) {
                 return nullptr;
             }
-            return std::make_unique<tokenElement>(BOOLEAN,true);
+            return this->nowToken = std::make_shared<tokenElement>(BOOLEAN,true);
         }
-        if (this->lastChar == L'f') {
+        if (lastChar == L'f') {
             if (!isWord(L"alse")) {
                 return nullptr;
             }
-            return std::make_unique<tokenElement>(BOOLEAN,false);
+            return this->nowToken = std::make_shared<tokenElement>(BOOLEAN,false);
         }
-        if (this->lastChar == L'"') {
+        if (lastChar == L'"') {
             // String,start to read the string
-            
+            return this->nowToken = std::make_shared<tokenElement>(STRING,this->readString());
+        }
+        if (iswdigit(lastChar)) {
+            return this->nowToken = std::make_shared<tokenElement>(NUMBER,this->readNumber());
         }
         return nullptr;
     }

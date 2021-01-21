@@ -1,7 +1,10 @@
 #pragma once
+namespace RJSON {
 enum NodeType{
-    Number,
-    String,
-    Object,
-    Array
+    TypeNumber,
+    TypeString,
+    TypeObject,
+    TypeArray,
+    TypeBool,
 };
+}
