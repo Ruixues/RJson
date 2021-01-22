@@ -5,6 +5,7 @@
 #include "number.h"
 #include "string.h"
 #include "bool.h"
+#include "null.h"
 #include <any>
 #include <memory>
 #include <string>
@@ -48,6 +49,10 @@ namespace RJSON {
         if (token->type == NUMBER) {
             this->reader->readAToken();
             return std::shared_ptr<Number>(std::any_cast<Number*>(token->data));
+        }
+        if (token->type == NULL_) {
+            this->reader->readAToken();
+            return std::make_shared<class NULL_>();
         }
         if (token->type == STRING) {
             this->reader->readAToken();

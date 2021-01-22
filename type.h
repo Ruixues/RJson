@@ -6,5 +6,6 @@ enum NodeType{
     TypeObject,
     TypeArray,
     TypeBool,
+    TypeNULL,
 };
 }
